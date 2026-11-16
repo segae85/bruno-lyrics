@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f0e13">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>떼창 연습 플레이어</title>
+<style>
+:root{color-scheme:dark;--bg:#0f0e13;--card:#1a1820;--card2:#23202b;--line:#2e2a38;--text:#f4f0e8;--muted:#9d97aa;--gold:#e9b949;--gold2:#ffd97a;--ink:#1b1505;--bad:#f06d6d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Segoe UI",sans-serif;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:640px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(32px + env(safe-area-inset-bottom,0px))}
+.eyebrow{font-size:12px;letter-spacing:.18em;color:var(--gold);font-weight:700}
+h1{margin:4px 0 14px;font-size:22px;line-height:1.3;text-wrap:balance}
+.yt{position:relative;aspect-ratio:16/9;max-width:100%;border-radius:14px;overflow:hidden;background:#000}
+.yt iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.ctl{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.ctl button{border:1px solid var(--line);background:var(--card2);color:var(--text);border-radius:12px;padding:12px 4px;font:inherit;font-size:15px}
+.ctl button.on{border-color:var(--gold);color:var(--gold2)}
+.ctl .wide{grid-column:span 2}
+.hint{color:var(--muted);font-size:13.5px;margin:12px 0 0}
+.err{color:var(--bad)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">BRUNO MARS · 떼창 연습</div>
+  <h1 id="ttl">플레이어</h1>
+  <div class="yt"><div id="ytp"></div></div>
+  <div class="ctl">
+    <button data-sk="-5">−5초</button>
+    <button data-sk="5">+5초</button>
+    <button data-ab class="wide">구간반복</button>
+    <button data-r="0.75">0.75×</button>
+    <button data-r="0.9">0.9×</button>
+    <button data-r="1" class="on">1×</button>
+    <button data-r="1.25">1.25×</button>
+  </div>
+  <p class="hint" id="msg">구간반복: 시작 지점에서 한 번, 끝 지점에서 한 번 누르면 그 사이를 계속 반복해요. 다 들었으면 뒤로 가기로 연습장에 돌아가세요.</p>
+</div>
+<script>
+(() => {
+  const p = new URLSearchParams(location.search);
+  const vid = (p.get("v") || "").match(/^[\w-]{11}$/) ? p.get("v") : null;
+  const t = p.get("t");
+  if (t) { document.getElementById("ttl").textContent = t; document.title = t + " · 떼창 연습"; }
+  const msg = document.getElementById("msg");
+  if (!vid) { msg.className = "hint err"; msg.textContent = "영상 정보가 없어요. 연습장에서 ‘듣기’ 버튼으로 다시 열어 주세요."; return; }
+
+  let player = null, rate = 1;
+  const ab = { a: null, b: null }, abBtn = document.querySelector("[data-ab]");
+  const now = () => (player && player.getCurrentTime ? player.getCurrentTime() : 0);
+  window.onYouTubeIframeAPIReady = () => {
+    player = new YT.Player("ytp", {
+      videoId: vid,
+      playerVars: { playsinline: 1, rel: 0 },
+      events: {
+        onStateChange: e => { if (e.data === 1 && rate !== 1) player.setPlaybackRate(rate); },
+        onError: () => { msg.className = "hint err"; msg.textContent = "이 영상은 다른 사이트에서 재생이 막혀 있어요. 연습장 편집 탭에서 같은 곡의 다른 영상(공식 오디오, 가사 영상 등) 링크로 바꿔 주세요."; }
+      }
+    });
+  };
+  const s = document.createElement("script");
+  s.src = "https://www.youtube.com/iframe_api";
+  s.onerror = () => { msg.className = "hint err"; msg.textContent = "YouTube 플레이어를 불러오지 못했어요. 인터넷 연결을 확인해 주세요."; };
+  document.head.appendChild(s);
+
+  setInterval(() => { if (ab.b != null && now() >= ab.b) player.seekTo(ab.a, true); }, 200);
+  document.querySelector(".ctl").onclick = e => {
+    const b = e.target.closest("button"); if (!b || !player || !player.seekTo) return;
+    if (b.dataset.sk) player.seekTo(Math.max(0, now() + +b.dataset.sk), true);
+    if (b.dataset.r) {
+      rate = +b.dataset.r; player.setPlaybackRate(rate);
+      document.querySelectorAll("[data-r]").forEach(x => x.classList.toggle("on", x === b));
+    }
+    if (b.hasAttribute("data-ab")) {
+      if (ab.a == null) { ab.a = now(); abBtn.textContent = "끝 지점 찍기"; abBtn.classList.add("on"); }
+      else if (ab.b == null) {
+        if (now() <= ab.a) return;
+        ab.b = now(); player.seekTo(ab.a, true); abBtn.textContent = "반복 해제";
+      } else { ab.a = ab.b = null; abBtn.textContent = "구간반복"; abBtn.classList.remove("on"); }
+    }
+  };
+})();
+</script>
+</body>
+</html>
