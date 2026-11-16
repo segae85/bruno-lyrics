@@ -7,48 +7,106 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>떼창 연습 플레이어</title>
 <style>
-:root{color-scheme:dark;--bg:#0f0e13;--card:#1a1820;--card2:#23202b;--line:#2e2a38;--text:#f4f0e8;--muted:#9d97aa;--gold:#e9b949;--gold2:#ffd97a;--ink:#1b1505;--bad:#f06d6d}
+:root{color-scheme:dark;--bg:#0f0e13;--card:#1a1820;--card2:#23202b;--line:#2e2a38;--text:#f4f0e8;--muted:#9d97aa;--gold:#e9b949;--gold2:#ffd97a;--ink:#1b1505;--bad:#f06d6d;--blue:#86adff}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Segoe UI",sans-serif;-webkit-tap-highlight-color:transparent}
-.wrap{max-width:640px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(32px + env(safe-area-inset-bottom,0px))}
-.eyebrow{font-size:12px;letter-spacing:.18em;color:var(--gold);font-weight:700}
-h1{margin:4px 0 14px;font-size:22px;line-height:1.3;text-wrap:balance}
-.yt{position:relative;aspect-ratio:16/9;max-width:100%;border-radius:14px;overflow:hidden;background:#000}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px calc(40px + env(safe-area-inset-bottom,0px))}
+.stick{position:sticky;top:0;z-index:5;background:var(--bg);padding-top:calc(10px + env(safe-area-inset-top,0px));padding-bottom:8px;border-bottom:1px solid var(--line)}
+.head{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;min-width:0}
+.head b{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.head small{color:var(--gold);font-size:11px;letter-spacing:.15em;font-weight:700;flex:none}
+.yt{position:relative;aspect-ratio:16/9;max-width:100%;max-height:32vh;margin:0 auto;border-radius:12px;overflow:hidden;background:#000}
 .yt iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.ctl{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
-.ctl button{border:1px solid var(--line);background:var(--card2);color:var(--text);border-radius:12px;padding:12px 4px;font:inherit;font-size:15px}
+.ctl{display:flex;gap:6px;margin-top:8px}
+.ctl button{flex:1;border:1px solid var(--line);background:var(--card2);color:var(--text);border-radius:10px;padding:8px 2px;font:inherit;font-size:13px;white-space:nowrap}
 .ctl button.on{border-color:var(--gold);color:var(--gold2)}
-.ctl .wide{grid-column:span 2}
-.hint{color:var(--muted);font-size:13.5px;margin:12px 0 0}
+.chips{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:99px;padding:5px 12px;font:inherit;font-size:13.5px}
+.chip.on{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:700}
+.lyr{padding-top:8px}
+.sec{color:var(--gold);font-size:13px;font-weight:700;letter-spacing:.04em;margin:18px 0 6px}
+.gap{height:14px}
+.ln{padding:5px 0}
+.ln .en{font-size:17.5px;line-height:1.5}
+.ln .kr{font-size:14.5px;color:var(--muted);line-height:1.5}
+.lyr.quiz .ln{display:flex;flex-direction:column-reverse;cursor:pointer}
+.lyr.quiz .ln .kr{color:var(--text);font-size:15.5px}
+.lyr.quiz .ln .en{filter:blur(7px);color:var(--blue);transition:filter .2s;user-select:none}
+.lyr.quiz .ln.show .en{filter:none}
+.hint{color:var(--muted);font-size:13.5px;margin:10px 0 0}
 .err{color:var(--bad)}
 :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="eyebrow">BRUNO MARS · 떼창 연습</div>
-  <h1 id="ttl">플레이어</h1>
-  <div class="yt"><div id="ytp"></div></div>
-  <div class="ctl">
-    <button data-sk="-5">−5초</button>
-    <button data-sk="5">+5초</button>
-    <button data-ab class="wide">구간반복</button>
-    <button data-r="0.75">0.75×</button>
-    <button data-r="0.9">0.9×</button>
-    <button data-r="1" class="on">1×</button>
-    <button data-r="1.25">1.25×</button>
+  <div class="stick">
+    <div class="head"><small>BRUNO MARS</small><b id="ttl">플레이어</b></div>
+    <div class="yt"><div id="ytp"></div></div>
+    <div class="ctl">
+      <button data-sk="-5">−5초</button>
+      <button data-r="0.75">0.75×</button>
+      <button data-r="0.9">0.9×</button>
+      <button data-r="1" class="on">1×</button>
+      <button data-ab>구간반복</button>
+    </div>
+    <div class="chips" id="modes">
+      <button class="chip on" data-m="both">영어+해석</button>
+      <button class="chip" data-m="en">영어만</button>
+      <button class="chip" data-m="quiz">해석 보고 떠올리기</button>
+    </div>
   </div>
-  <p class="hint" id="msg">구간반복: 시작 지점에서 한 번, 끝 지점에서 한 번 누르면 그 사이를 계속 반복해요. 다 들었으면 뒤로 가기로 연습장에 돌아가세요.</p>
+  <p class="hint" id="msg" hidden></p>
+  <div class="lyr both" id="lyr"></div>
 </div>
 <script>
 (() => {
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const p = new URLSearchParams(location.search);
-  const vid = (p.get("v") || "").match(/^[\w-]{11}$/) ? p.get("v") : null;
+  const vid = /^[\w-]{11}$/.test(p.get("v") || "") ? p.get("v") : null;
   const t = p.get("t");
   if (t) { document.getElementById("ttl").textContent = t; document.title = t + " · 떼창 연습"; }
   const msg = document.getElementById("msg");
-  if (!vid) { msg.className = "hint err"; msg.textContent = "영상 정보가 없어요. 연습장에서 ‘듣기’ 버튼으로 다시 열어 주세요."; return; }
+  const say = (text, bad) => { msg.hidden = false; msg.className = "hint" + (bad ? " err" : ""); msg.textContent = text; };
 
+  // 가사는 연습장에서 주소의 # 뒤에 담아 넘겨줌 (서버로 전송되지 않고 이 기기에서만 읽힘)
+  let L = null;
+  try {
+    const h = location.hash.slice(1);
+    if (h) {
+      const b64 = h.replace(/-/g, "+").replace(/_/g, "/");
+      const bin = atob(b64 + "===".slice((b64.length + 3) % 4));
+      L = JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0))));
+    }
+  } catch (e) { L = null; }
+
+  const lyr = document.getElementById("lyr");
+  function render() {
+    if (!L || !(L.en || "").trim()) { lyr.innerHTML = ""; say("가사가 없어요. 연습장의 ‘바로 듣기’ 버튼으로 열어 주세요.", false); return; }
+    const en = L.en.replace(/\r/g, "").split("\n"), kr = (L.kr || "").replace(/\r/g, "").split("\n");
+    const md = lyr.className.split(" ")[1];
+    let out = "", lastGap = true;
+    en.forEach((l, i) => {
+      const s = l.trim();
+      if (!s) { if (!lastGap) out += '<div class="gap"></div>'; lastGap = true; return; }
+      lastGap = false;
+      if (/^\[.*\]$/.test(s)) { out += `<div class="sec">${esc(s)}</div>`; return; }
+      const k = (kr[i] || "").trim();
+      out += `<div class="ln"><div class="en">${esc(s)}</div>${md !== "en" && (k || md === "quiz") ? `<div class="kr">${esc(k || "(해석 없음)")}</div>` : ""}</div>`;
+    });
+    lyr.innerHTML = out;
+  }
+  document.getElementById("modes").onclick = e => {
+    const b = e.target.closest("[data-m]"); if (!b) return;
+    lyr.className = "lyr " + b.dataset.m;
+    document.querySelectorAll("[data-m]").forEach(x => x.classList.toggle("on", x === b));
+    render();
+  };
+  lyr.onclick = e => { if (lyr.classList.contains("quiz")) { const ln = e.target.closest(".ln"); if (ln) ln.classList.toggle("show"); } };
+  render();
+
+  if (!vid) { say("영상 정보가 없어요. 연습장 편집 탭에서 YouTube 링크를 넣어 주세요.", true); return; }
   let player = null, rate = 1;
   const ab = { a: null, b: null }, abBtn = document.querySelector("[data-ab]");
   const now = () => (player && player.getCurrentTime ? player.getCurrentTime() : 0);
@@ -58,13 +116,13 @@ h1{margin:4px 0 14px;font-size:22px;line-height:1.3;text-wrap:balance}
       playerVars: { playsinline: 1, rel: 0 },
       events: {
         onStateChange: e => { if (e.data === 1 && rate !== 1) player.setPlaybackRate(rate); },
-        onError: () => { msg.className = "hint err"; msg.textContent = "이 영상은 다른 사이트에서 재생이 막혀 있어요. 연습장 편집 탭에서 같은 곡의 다른 영상(공식 오디오, 가사 영상 등) 링크로 바꿔 주세요."; }
+        onError: () => say("이 영상은 다른 사이트에서 재생이 막혀 있어요. 연습장 편집 탭에서 같은 곡의 다른 영상(공식 오디오, 가사 영상 등) 링크로 바꿔 주세요.", true)
       }
     });
   };
   const s = document.createElement("script");
   s.src = "https://www.youtube.com/iframe_api";
-  s.onerror = () => { msg.className = "hint err"; msg.textContent = "YouTube 플레이어를 불러오지 못했어요. 인터넷 연결을 확인해 주세요."; };
+  s.onerror = () => say("YouTube 플레이어를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.", true);
   document.head.appendChild(s);
 
   setInterval(() => { if (ab.b != null && now() >= ab.b) player.seekTo(ab.a, true); }, 200);
@@ -76,7 +134,7 @@ h1{margin:4px 0 14px;font-size:22px;line-height:1.3;text-wrap:balance}
       document.querySelectorAll("[data-r]").forEach(x => x.classList.toggle("on", x === b));
     }
     if (b.hasAttribute("data-ab")) {
-      if (ab.a == null) { ab.a = now(); abBtn.textContent = "끝 지점 찍기"; abBtn.classList.add("on"); }
+      if (ab.a == null) { ab.a = now(); abBtn.textContent = "끝 찍기"; abBtn.classList.add("on"); }
       else if (ab.b == null) {
         if (now() <= ab.a) return;
         ab.b = now(); player.seekTo(ab.a, true); abBtn.textContent = "반복 해제";
