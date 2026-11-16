@@ -508,8 +508,7 @@ function renderMedia(id) {
     <div class="links">
       ${sg.yt ? `<a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=${esc(sg.yt)}">YouTube 앱에서 열기</a>` : ""}
       <a target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=${q}">YouTube 검색</a>
-      <a target="_blank" rel="noopener" href="https://www.melon.com/search/total/index.htm?q=${q}">멜론</a>
-      <a target="_blank" rel="noopener" href="https://open.spotify.com/search/${q}">Spotify</a>
+      <a target="_blank" rel="noopener" href="https://m.app.melon.com/search/searchMcom.htm?s=${q}&web_only=Y">멜론에서 찾기</a>
     </div>
     ${!sg.yt ? `<p class="hint" id="mhint">편집 탭에서 YouTube 링크나 내 음원 파일을 넣으면 여기서 바로 재생되고 배속·구간반복도 쓸 수 있어요.</p>` : ""}
   </div>`;
