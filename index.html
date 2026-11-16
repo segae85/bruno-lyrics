@@ -191,6 +191,29 @@ const app = $("#app");
 let S = load();
 let cur = null, R = null, flush = null, audioURL = null;
 
+// claude.ai 연습장의 ‘휴대폰 연습장 열기’ 버튼이 주소 # 뒤에 가사·영상을 담아 보냄 (# 뒤는 서버로 전송되지 않음)
+(function importFromHash() {
+  const h = location.hash;
+  if (!h.startsWith("#import=")) return;
+  try {
+    const b64 = h.slice(8).replace(/-/g, "+").replace(/_/g, "/");
+    const bin = atob(b64 + "===".slice((b64.length + 3) % 4));
+    const d = JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0))));
+    const incoming = d.songs || {};
+    Object.keys(S.songs).forEach(id => { if (!incoming[id]) { S.songs[id].en = ""; S.songs[id].kr = ""; S.songs[id].yt = ""; } });
+    Object.entries(incoming).forEach(([id, v]) => {
+      const s = S.songs[id] || (S.songs[id] = { en: "", kr: "", yt: "", mastered: false, best: 0, blank: {} });
+      s.en = v.en || ""; s.kr = v.kr || ""; s.yt = v.yt || "";
+    });
+    if (Array.isArray(d.custom)) S.custom = d.custom;
+    if (d.date) S.date = d.date;
+    S.ui.managed = true;
+    try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+    history.replaceState(null, "", location.pathname);
+    window.__imported = true;
+  } catch (e) {}
+})();
+
 function load() {
   let s = null;
   try { s = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
@@ -344,7 +367,8 @@ function route() {
   if (flush) { flush(); flush = null; }
   if (view.name === "song" && meta(view.id)) {
     const sg = song(view.id);
-    const tab = TABS.some(t => t[0] === view.tab) ? view.tab : ((sg.en || "").trim() ? "lyrics" : "edit");
+    let tab = TABS.some(t => t[0] === view.tab) ? view.tab : ((sg.en || "").trim() || S.ui.managed ? "lyrics" : "edit");
+    if (tab === "edit" && S.ui.managed) tab = "lyrics";
     view.tab = tab;
     renderSong(view.id, tab);
   } else { view = { name: "home" }; renderHome(); }
@@ -465,7 +489,7 @@ function renderSong(id, tab) {
       <button class="ic star ${sg.mastered ? "on" : ""}" id="star" aria-label="외움 표시">★</button>
     </div>
     <div id="media"></div>
-    <nav class="tabs" id="tabs">${TABS.map(([k, l]) => `<a href="#" data-t="${k}" data-go="song/${id}/${k}">${l}</a>`).join("")}</nav>
+    <nav class="tabs" id="tabs">${TABS.filter(t => !S.ui.managed || t[0] !== "edit").map(([k, l]) => `<a href="#" data-t="${k}" data-go="song/${id}/${k}">${l}</a>`).join("")}</nav>
     <main id="tb"></main>
     <div class="pn">${prev ? `<a href="#" data-go="song/${prev.id}">‹ ${esc(prev.t)}</a>` : "<span></span>"}${next ? `<a href="#" data-go="song/${next.id}">${esc(next.t)} ›</a>` : "<span></span>"}</div>`;
     $("#star").onclick = e => {
@@ -481,7 +505,7 @@ function renderSong(id, tab) {
   $$("#tabs a").forEach(a => a.classList.toggle("on", a.dataset.t === tab));
   const old = $("#tb"), tb = old.cloneNode(false); old.replaceWith(tb);
   if (tab !== "edit" && !(sg.en || "").trim()) {
-    tb.innerHTML = `<div class="empty"><p>아직 가사가 없어요.<br>편집 탭에서 영어 가사와 한국어 해석을 넣어 주세요.</p>
+    tb.innerHTML = S.ui.managed ? `<div class="empty"><p>아직 이 곡의 가사가 준비되지 않았어요.<br>claude.ai 연습장에서 가사가 추가되면 ‘최신 가사 가져오기’를 다시 눌러 주세요.</p></div>` : `<div class="empty"><p>아직 가사가 없어요.<br>편집 탭에서 영어 가사와 한국어 해석을 넣어 주세요.</p>
       <a class="btn pri" href="#" data-go="song/${id}/edit" style="display:inline-block;margin-top:8px">가사 넣으러 가기</a></div>`;
     return;
   }
@@ -953,6 +977,7 @@ window.addEventListener("pagehide", () => { if (flush) flush(); push(); });
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") { if (flush) flush(); push(); } });
 route();
 initDb().catch(() => {});
+if (window.__imported) setTimeout(() => toast("최신 가사·영상을 가져왔어요"), 300);
 })();
 </script>
 
