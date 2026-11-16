@@ -257,7 +257,8 @@ function refreshView() {
 }
 async function loadRemote() {
   try {
-    const r = await fetch("lyrics.enc?t=" + Date.now(), { cache: "no-store" });
+    let r = await fetch("lyrics.enc?t=" + Date.now(), { cache: "no-store" });
+    if (!r.ok && r.status !== 404) { await new Promise(res => setTimeout(res, 2000)); r = await fetch("lyrics.enc?t=" + Date.now(), { cache: "no-store" }); }
     if (r.status === 404) { REMOTE = { state: "none" }; return refreshView(); }
     if (!r.ok) throw 0;
     const f = await r.json();
