@@ -1,0 +1,961 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f0e13">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Bruno Mars 떼창 연습장</title>
+<style>
+.yt{position:relative;aspect-ratio:16/9;max-width:100%;border-radius:12px;overflow:hidden;background:#000;margin-bottom:10px}
+.yt iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+body .wrap{padding-top:env(safe-area-inset-top,0px)}
+/* 레이아웃: 한 손 세로 스크롤 — 곡 목록 → 곡 화면(듣기 · 탭 · 연습). 공연장 조명 같은 어두운 무대 + 24K 골드 단색 포인트 */
+:root{
+  color-scheme:dark;
+  --bg:#0f0e13;--card:#1a1820;--card2:#23202b;--line:#2e2a38;
+  --text:#f4f0e8;--muted:#9d97aa;--gold:#e9b949;--gold2:#ffd97a;--ink:#1b1505;
+  --ok:#4cc38a;--okbg:#12281e;--bad:#f06d6d;--badbg:#2a1616;--blue:#86adff;--wipbg:#2a2312;--focus:#2f2a1a;
+  --top:env(safe-area-inset-top,0px);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:16px/1.55 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Segoe UI",sans-serif;
+  -webkit-tap-highlight-color:transparent}
+a{color:inherit;text-decoration:none}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px 40px}
+[hidden]{display:none!important}
+
+.hero{padding-block:24px 18px}
+.eyebrow{font-size:12px;letter-spacing:.18em;color:var(--gold);font-weight:700}
+.hero h1{margin:6px 0 14px;font-size:26px;line-height:1.25;text-wrap:balance}
+.dday{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.dday b{font-size:40px;line-height:1;color:var(--gold2);font-variant-numeric:tabular-nums}
+.dday span{font-size:13px;color:var(--muted)}
+.prog{height:8px;background:var(--card2);border-radius:99px;overflow:hidden;margin:16px 0 8px}
+.prog>div{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:99px;transition:width .4s}
+.stats{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.stats b{color:var(--text)}
+
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:6px 13px;font-size:14px;color:var(--muted)}
+.chip.on{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:700}
+
+.songs{list-style:none;margin:0;padding:0}
+.songs li a{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line)}
+.songs .no{width:26px;text-align:right;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums;flex:none}
+.songs .ti{flex:1;min-width:0}
+.songs .ti b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.songs .ti small{display:block;color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{flex:none;font-size:12px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+.pill.wip{border-color:#5a4a1f;color:var(--gold2);background:var(--wipbg)}
+.pill.done{border-color:#1f5a3e;color:var(--ok);background:var(--okbg)}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}
+.card h3{margin:0 0 10px;font-size:16px}
+.hint{color:var(--muted);font-size:13.5px;margin:6px 0}
+.btn{border:1px solid var(--line);background:var(--card2);border-radius:12px;padding:10px 14px;font-size:15px}
+.btn.pri{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:700}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--bad);border-color:#5a2a2a;background:transparent}
+.btn.warn{color:var(--ink);background:var(--bad);border-color:var(--bad);font-weight:700}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btns .btn{flex:1;min-width:0}
+.row{display:flex;gap:8px;align-items:center}
+.row input{flex:1;min-width:0}
+label{display:block;font-size:13.5px;color:var(--muted);margin:14px 0 6px}
+input[type=url],input[type=text],input[type=date],textarea,select{
+  width:100%;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:16px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--gold)}
+textarea{resize:vertical;line-height:1.6}
+input[type=file]{font-size:14px;color:var(--muted);max-width:100%;min-width:0}
+.links{display:flex;gap:8px;flex-wrap:wrap}
+.links a{font-size:13.5px;padding:7px 12px;border-radius:99px;background:var(--card2);border:1px solid var(--line)}
+.links a.main{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:700}
+.settings{margin-top:28px;border-top:1px solid var(--line);padding-top:8px}
+.settings h3{font-size:15px;margin:14px 0 4px}
+.sync{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.sync::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.sync.on::before{background:var(--ok)}
+.foot{color:var(--muted);font-size:12px;margin-top:24px;line-height:1.6}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);
+  background:#2c2836;color:var(--text);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;
+  transition:.25s;z-index:50;max-width:90vw;text-align:center;box-shadow:0 8px 24px #0008}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+.top{display:flex;align-items:center;gap:8px;padding:12px 0 8px}
+.ic{width:40px;height:40px;flex:none;display:grid;place-items:center;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:22px}
+.tt{flex:1;min-width:0}
+.tt b{display:block;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt small{display:block;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.star{color:var(--muted);font-size:18px}
+.star.on{color:var(--ink);background:var(--gold);border-color:var(--gold)}
+#media{background:var(--card);border:1px solid var(--line);border-radius:16px;margin:4px 0 0;overflow:hidden}
+.mhead{width:100%;display:flex;justify-content:space-between;align-items:center;padding:11px 14px;background:none;border:0;font-weight:600}
+.mhead span{color:var(--muted);font-size:13px;font-weight:400}
+.mbody{padding:0 14px 14px}
+audio{width:100%;height:40px;margin-bottom:6px}
+.ctl{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.ctl button{flex:1;border:1px solid var(--line);background:var(--card2);border-radius:10px;padding:7px 4px;font-size:13px;white-space:nowrap}
+.ctl button.on{border-color:var(--gold);color:var(--gold2)}
+.tabs{position:sticky;top:var(--top);z-index:10;display:flex;background:var(--bg);border-bottom:1px solid var(--line);margin:8px -16px 0;padding:0 8px;height:48px}
+.tabs a{flex:1;display:grid;place-items:center;font-size:15px;color:var(--muted);border-bottom:2px solid transparent}
+.tabs a.on{color:var(--text);border-color:var(--gold);font-weight:700}
+.pn{display:flex;justify-content:space-between;gap:12px;margin-top:28px;font-size:14px;color:var(--muted)}
+.pn a{max-width:48%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.empty{text-align:center;padding:40px 8px}
+.empty p{color:var(--muted)}
+
+.lyr{padding:4px 0}
+.lyr .head,.bl .head{color:var(--gold);font-size:13px;font-weight:700;letter-spacing:.04em;margin:18px 0 6px}
+.gap{height:14px}
+.ln{padding:5px 0}
+.ln .en{font-size:17.5px;line-height:1.5}
+.ln .kr{font-size:14.5px;color:var(--muted);line-height:1.5}
+.lyr.quiz .ln{display:flex;flex-direction:column-reverse;cursor:pointer}
+.lyr.quiz .ln .kr{color:var(--text);font-size:15.5px}
+.lyr.quiz .ln .en{filter:blur(7px);color:var(--blue);transition:filter .2s;user-select:none}
+.lyr.quiz .ln.show .en{filter:none}
+
+.tool{position:sticky;top:calc(var(--top) + 48px);z-index:9;background:var(--bg);padding:8px 0;border-bottom:1px solid var(--line);margin-bottom:6px}
+.tool .row{justify-content:space-between;flex-wrap:wrap}
+.tool .chips{margin:0 0 8px}
+.tool .btn{padding:7px 11px;font-size:14px}
+.score{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.score b{color:var(--text)}
+.bl .bline{font-size:17.5px;line-height:2.25;padding:2px 0}
+.bl .kr{font-size:14px;color:var(--muted);line-height:1.5;margin:-4px 0 4px}
+.blank{display:inline-block;vertical-align:baseline;background:var(--card2);border:0;border-bottom:2px solid var(--gold);
+  border-radius:6px 6px 2px 2px;padding:0 4px;margin:0 1px;font-size:17px;line-height:1.5;outline:none;text-align:center;min-width:2.5ch;max-width:100%}
+.blank:focus{background:var(--focus)}
+.blank.bad{border-color:var(--bad)}
+.blank.ok{border-color:var(--ok);color:var(--ok);background:var(--okbg)}
+.blank.ok.h{color:var(--gold2)}
+.blank.shown{border-color:var(--bad);color:var(--bad);background:var(--badbg)}
+
+.rbar{display:flex;align-items:center;gap:12px;margin:14px 0 4px;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.rprog{flex:1;height:6px;background:var(--card2);border-radius:99px;overflow:hidden}
+.rprog>div{height:100%;background:var(--gold)}
+.rc .sec{color:var(--gold);font-size:12.5px;font-weight:700;letter-spacing:.04em;margin-bottom:6px}
+.rc .prev{color:var(--muted);font-size:15px;margin-bottom:8px}
+.rc .krh{font-size:17px;margin-bottom:8px}
+.rc .fl{font-size:17px;letter-spacing:.02em;color:var(--blue);margin-bottom:8px;word-break:break-word}
+.rc .fl i{font-style:normal;opacity:.5}
+.rc textarea{margin-top:6px}
+.ans{font-size:17px;line-height:1.7;margin-top:12px}
+.hit{color:var(--ok)}
+.miss{color:var(--bad);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:4px}
+.typed{font-size:14px;color:var(--muted);margin-top:4px}
+.sc{display:inline-block;margin-top:6px;font-weight:700;font-size:14px;padding:2px 10px;border-radius:99px}
+.sc.g{background:var(--okbg);color:var(--ok)}.sc.m{background:var(--wipbg);color:var(--gold2)}.sc.b{background:var(--badbg);color:var(--bad)}
+.big{font-size:56px;font-weight:800;color:var(--gold2);line-height:1;margin:8px 0}
+.wrong{margin-top:16px}
+.wrong .ln{border-top:1px solid var(--line);padding:10px 0}
+.wrong .s{font-size:12px;color:var(--bad)}
+select{margin-top:4px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+(() => {
+// 출처: 멜론 DJ 플레이리스트 "2027 브루노 마스 내한 예상 셋리스트" (예상, 미확정)
+const SETLIST = [
+  ["Risk It All","Bruno Mars"],["I Just Might","Bruno Mars"],["24K Magic","Bruno Mars"],
+  ["Nothin' On You","B.o.B (Feat. Bruno Mars)"],["That's What I Like","Bruno Mars"],
+  ["Leave The Door Open","Silk Sonic"],["Cha Cha Cha","Bruno Mars"],["On My Soul","Bruno Mars"],
+  ["When I Was Your Man","Bruno Mars"],["Marry You","Bruno Mars"],["Too Good To Say Goodbye","Bruno Mars"],
+  ["God Was Showing Off","Bruno Mars"],["Dance With Me","Bruno Mars"],["Something Serious","Bruno Mars"],
+  ["Runaway Baby","Bruno Mars"],["Treasure","Bruno Mars"],["Talking To The Moon","Bruno Mars"],
+  ["Versace on the Floor","Bruno Mars"],["Why You Wanna Fight?","Bruno Mars"],["Grenade","Bruno Mars"],
+  ["Please Me","Cardi B, Bruno Mars"],["Perm","Bruno Mars"],["Blast Off","Silk Sonic"],["777","Silk Sonic"],
+  ["Fly As Me","Silk Sonic"],["Smokin Out The Window","Silk Sonic"],["It Will Rain","Bruno Mars"],
+  ["Locked Out Of Heaven","Bruno Mars"],["Just The Way You Are","Bruno Mars"],["APT.","ROSÉ, Bruno Mars"],
+  ["Uptown Funk","Mark Ronson (Feat. Bruno Mars)"]
+];
+const TABS = [["lyrics","가사"],["blank","빈칸"],["recall","외워쓰기"],["edit","편집"]];
+const TOK = /^([^\p{L}\p{N}'’]*)(.*?)([^\p{L}\p{N}'’]*)$/u;
+const KEY = "bm-lyrics-v1";
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm = s => String(s).toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+const app = $("#app");
+
+let S = load();
+let cur = null, R = null, flush = null, audioURL = null;
+
+function load() {
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+  s = s && typeof s === "object" ? s : {};
+  s.songs = s.songs || {}; s.custom = s.custom || []; s.ui = s.ui || {}; s.audio = s.audio || {};
+  s.date = s.date || "2027-05-01";
+  return s;
+}
+function saveLocal() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+// save(): 화면 설정은 이 기기에만, 인자로 받은 곡 id('_meta' 포함)는 계정 저장소에도 올림
+function save(...ids) {
+  saveLocal();
+  ids.forEach(i => dirty.add(i));
+  if (ids.length && COL) schedule();
+}
+function toast(t) {
+  let el = $("#toast");
+  if (!el) { el = document.createElement("div"); el.id = "toast"; el.setAttribute("role", "status"); document.body.appendChild(el); }
+  el.textContent = t; el.classList.add("show");
+  clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("show"), 2200);
+}
+// 두 번 눌러 확인 (팝업 대신)
+function twoTap(btn, msg, fn) {
+  const orig = btn.textContent;
+  btn.onclick = () => {
+    if (btn.dataset.arm) { delete btn.dataset.arm; btn.textContent = orig; btn.classList.remove("warn"); fn(); return; }
+    btn.dataset.arm = 1; btn.textContent = msg; btn.classList.add("warn");
+    setTimeout(() => { if (btn.dataset.arm) { delete btn.dataset.arm; btn.textContent = orig; btn.classList.remove("warn"); } }, 3500);
+  };
+}
+
+// ---------- 계정 저장소 (db) ----------
+let COL = null, dbT = null, pushing = false, syncOn = false;
+const dirty = new Set();
+function schedule() { clearTimeout(dbT); dbT = setTimeout(push, 800); }
+async function push() {
+  if (!COL || pushing) return;
+  pushing = true;
+  try {
+    while (dirty.size) {
+      const id = dirty.values().next().value; dirty.delete(id);
+      try {
+        const ref = COL.doc(id);
+        if (id === "_meta") await ref.set({ custom: S.custom, date: S.date });
+        else if (S.songs[id]) await ref.set(JSON.parse(JSON.stringify(S.songs[id])));
+        else await ref.delete();
+      } catch (e) {
+        if (e && e.code === "unavailable") { dirty.add(id); setTimeout(schedule, 3000); break; }
+        if (e && e.code === "quota_exceeded") toast("저장공간이 가득 찼어요. 안 쓰는 곡의 가사를 지워 주세요.");
+        else { COL = null; syncOn = false; toast("계정 저장이 멈췄어요. 이 기기에는 계속 저장돼요."); break; }
+      }
+    }
+  } finally { pushing = false; }
+}
+async function initDb() {
+  const c = window.claude;
+  if (!c || !c.use) return;
+  const [db, user] = await Promise.all([c.use("db"), c.use("user")]);
+  if (!db || !user) return;
+  const uid = await user.id(); if (!uid) return;
+  const col = db.collection("data/users/" + uid);
+  let snap;
+  try { snap = await col.get(); } catch (e) { return; }
+  if (snap.empty) {
+    // 처음 연결: 이 기기에 있던 내용을 계정으로 올림
+    Object.keys(S.songs).forEach(k => dirty.add(k)); dirty.add("_meta");
+    COL = col; syncOn = true; schedule();
+  } else {
+    snap.docs.forEach(d => {
+      const v = d.data(); if (!v || dirty.has(d.id)) return;  // 계정 연결 전에 고친 내용은 덮어쓰지 않음
+      const o = JSON.parse(JSON.stringify(v));
+      if (d.id === "_meta") { if (Array.isArray(o.custom)) S.custom = o.custom; if (o.date) S.date = o.date; }
+      else S.songs[d.id] = o;
+    });
+    COL = col; syncOn = true; saveLocal();
+    if (dirty.size) schedule();
+    const typing = document.activeElement && /TEXTAREA|INPUT/.test(document.activeElement.tagName);
+    if (!typing) { cur = null; route(); }
+  }
+  const s = $("#sync"); if (s) setSync(s);
+}
+function setSync(el) {
+  el.classList.toggle("on", syncOn);
+  el.textContent = syncOn ? "내 계정에 저장 중 · 휴대폰·PC 어디서 열어도 이어져요" : "이 기기 브라우저에만 저장 중";
+}
+
+// ---------- 음원 파일 (이 기기 IndexedDB) ----------
+const IDB = {
+  db: null,
+  open() {
+    return new Promise((res, rej) => {
+      if (this.db) return res(this.db);
+      const r = indexedDB.open("bm-audio", 1);
+      r.onupgradeneeded = () => r.result.createObjectStore("a");
+      r.onsuccess = () => { this.db = r.result; res(this.db); };
+      r.onerror = () => rej(r.error);
+    });
+  },
+  async run(mode, fn) {
+    const db = await this.open();
+    return new Promise((res, rej) => {
+      const tx = db.transaction("a", mode), q = fn(tx.objectStore("a"));
+      tx.oncomplete = () => res(q.result); tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error);
+    });
+  },
+  get(k) { return this.run("readonly", s => s.get(k)); },
+  set(k, v) { return this.run("readwrite", s => s.put(v, k)); },
+  del(k) { return this.run("readwrite", s => s.delete(k)); }
+};
+
+function allSongs() {
+  return SETLIST.map(([t, a], i) => ({ id: "s" + i, t, a, n: i + 1 }))
+    .concat(S.custom.map((c, k) => ({ id: c.id, t: c.t, a: c.a, n: SETLIST.length + k + 1, custom: true })));
+}
+const meta = id => allSongs().find(x => x.id === id);
+function song(id) {
+  return S.songs[id] || (S.songs[id] = { en: "", kr: "", yt: "", mastered: false, best: 0, blank: {} });
+}
+function status(id) {
+  const s = S.songs[id];
+  if (!s || !(s.en || "").trim()) return "none";
+  return s.mastered ? "done" : "wip";
+}
+function parse(sg) {
+  const en = (sg.en || "").replace(/\r/g, "").split("\n");
+  const kr = (sg.kr || "").replace(/\r/g, "").split("\n");
+  const out = [];
+  en.forEach((l, i) => {
+    const t = l.trim();
+    if (!t) { if (out.length && out[out.length - 1].type !== "gap") out.push({ type: "gap" }); return; }
+    out.push({ type: /^\[.*\]$/.test(t) ? "head" : "line", en: t, kr: (kr[i] || "").trim() });
+  });
+  while (out.length && out[out.length - 1].type === "gap") out.pop();
+  return out;
+}
+function dday() {
+  const t = new Date(); t.setHours(0, 0, 0, 0);
+  return Math.round((new Date(S.date + "T00:00:00") - t) / 864e5);
+}
+function ytId(u) {
+  u = (u || "").trim();
+  if (/^[\w-]{11}$/.test(u)) return u;
+  const m = u.match(/(?:v=|youtu\.be\/|shorts\/|embed\/|live\/)([\w-]{11})/);
+  return m ? m[1] : null;
+}
+
+// ---------- 라우팅 (화면 이동은 페이지 안에서만) ----------
+let view = { name: "home" };
+function go(name, id, tab) { view = { name, id, tab }; route(); }
+function route() {
+  if (flush) { flush(); flush = null; }
+  if (view.name === "song" && meta(view.id)) {
+    const sg = song(view.id);
+    const tab = TABS.some(t => t[0] === view.tab) ? view.tab : ((sg.en || "").trim() ? "lyrics" : "edit");
+    view.tab = tab;
+    renderSong(view.id, tab);
+  } else { view = { name: "home" }; renderHome(); }
+}
+app.addEventListener("click", e => {
+  const a = e.target.closest("[data-go]"); if (!a) return;
+  e.preventDefault();
+  const [n, id, tab] = a.dataset.go.split("/");
+  go(n, id, tab);
+});
+
+// ---------- 홈 ----------
+function renderHome() {
+  cur = null; R = null; stopPlayers();
+  const list = allSongs(), c = { none: 0, wip: 0, done: 0 };
+  list.forEach(x => c[status(x.id)]++);
+  const f = S.ui.filter || "all", d = dday();
+  const pct = Math.round(c.done / list.length * 100);
+  const shown = list.filter(x => f === "all" || status(x.id) === f);
+  const [y, m, dd] = S.date.split("-");
+  app.innerHTML = `
+  <header class="hero">
+    <div class="eyebrow">BRUNO MARS · LIVE IN KOREA</div>
+    <h1>떼창 준비,<br>가사 다 외우고 가자</h1>
+    <div class="dday"><b>${d > 0 ? "D-" + d : d === 0 ? "D-DAY" : "D+" + (-d)}</b><span>${+y}년 ${+m}월 ${+dd}일 기준 · 아래에서 날짜 수정</span></div>
+    <div class="prog"><div style="width:${pct}%"></div></div>
+    <div class="stats"><span><b>${c.done}</b> / ${list.length} 외움</span><span><b>${c.wip}</b> 연습중</span><span><b>${c.none}</b> 가사 없음</span></div>
+  </header>
+  <div class="chips" id="flt">
+    ${[["all","전체"],["wip","연습중"],["done","외움"],["none","가사 없음"]].map(([k, l]) =>
+      `<button class="chip ${f === k ? "on" : ""}" data-f="${k}">${l}</button>`).join("")}
+  </div>
+  <ol class="songs">
+    ${shown.map(x => {
+      const st = status(x.id), sg = S.songs[x.id];
+      const lab = st === "none" ? "가사 없음" : st === "done" ? "외움 ✓" : (sg.best ? `연습 ${sg.best}점` : "연습중");
+      return `<li><a href="#" data-go="song/${x.id}"><span class="no">${x.n}</span>
+        <span class="ti"><b>${esc(x.t)}</b><small>${esc(x.a)}</small></span><span class="pill ${st}">${lab}</span></a></li>`;
+    }).join("") || `<li class="hint" style="padding:20px 4px">해당하는 곡이 없어요.</li>`}
+  </ol>
+  <div class="card" id="addbox" hidden>
+    <h3>곡 추가</h3>
+    <input type="text" id="nt" placeholder="곡 제목">
+    <input type="text" id="na" placeholder="아티스트" value="Bruno Mars" style="margin-top:8px">
+    <div class="btns"><button class="btn ghost" id="ncancel">취소</button><button class="btn pri" id="nadd">추가</button></div>
+  </div>
+  <div class="btns"><button class="btn" id="addopen">＋ 셋리스트에 곡 추가</button></div>
+  <section class="settings">
+    <h3>저장</h3>
+    <div class="sync" id="sync"></div>
+    <h3>공연 날짜</h3>
+    <input type="date" id="date" value="${esc(S.date)}">
+    <h3>백업</h3>
+    <p class="hint">가사·해석·점수를 파일로 저장하거나 불러올 수 있어요. 음원 파일은 포함되지 않아요.</p>
+    <div class="btns"><button class="btn" id="exp" hidden>백업 파일 저장</button><button class="btn" id="impb">백업 불러오기</button></div>
+    <input type="file" id="imp" accept="application/json,.json" hidden>
+    <div class="card" id="impok" hidden>
+      <p style="margin:0">백업 파일 내용으로 지금 기록을 덮어쓸까요?</p>
+      <div class="btns"><button class="btn ghost" id="impno">취소</button><button class="btn warn" id="impyes">덮어쓰기</button></div>
+    </div>
+  </section>
+  <p class="foot">셋리스트: 멜론 DJ 플레이리스트 “2027 브루노 마스 내한 예상 셋리스트” 기준 (예상 · 미확정)</p>`;
+
+  setSync($("#sync"));
+  $("#flt").onclick = e => { const b = e.target.closest("[data-f]"); if (!b) return; S.ui.filter = b.dataset.f; save(); renderHome(); };
+  $("#addopen").onclick = () => { $("#addbox").hidden = false; $("#nt").focus(); };
+  $("#ncancel").onclick = () => { $("#addbox").hidden = true; };
+  $("#nadd").onclick = () => {
+    const t = $("#nt").value.trim(); if (!t) return $("#nt").focus();
+    const id = "c" + Date.now();
+    S.custom.push({ id, t, a: $("#na").value.trim() || "Bruno Mars" }); save("_meta");
+    go("song", id, "edit");
+  };
+  $("#date").onchange = e => { if (e.target.value) { S.date = e.target.value; save("_meta"); renderHome(); } };
+
+  const exp = $("#exp");
+  exp.hidden = false;
+  exp.onclick = () => {
+    const blob = new Blob([JSON.stringify({ v: 1, songs: S.songs, custom: S.custom, date: S.date })], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `brunomars-lyrics-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    toast("백업 파일을 저장했어요");
+  };
+
+  let pending = null;
+  $("#impb").onclick = () => $("#imp").click();
+  $("#imp").onchange = async e => {
+    const file = e.target.files[0]; e.target.value = ""; if (!file) return;
+    try {
+      const d = JSON.parse(await file.text());
+      if (!d || typeof d.songs !== "object") throw 0;
+      pending = d; $("#impok").hidden = false;
+    } catch (err) { toast("올바른 백업 파일이 아니에요"); }
+  };
+  $("#impno").onclick = () => { pending = null; $("#impok").hidden = true; };
+  $("#impyes").onclick = () => {
+    if (!pending) return;
+    const ids = new Set([...Object.keys(S.songs), ...Object.keys(pending.songs)]);
+    S.songs = pending.songs; S.custom = Array.isArray(pending.custom) ? pending.custom : [];
+    if (pending.date) S.date = pending.date;
+    save("_meta", ...ids); toast("불러오기 완료"); renderHome();
+  };
+}
+
+// ---------- 곡 화면 ----------
+function renderSong(id, tab) {
+  const m = meta(id), sg = song(id);
+  if (!cur || cur.id !== id) {
+    cur = { id }; R = null;
+    const list = allSongs(), i = list.findIndex(x => x.id === id), prev = list[i - 1], next = list[i + 1];
+    app.innerHTML = `
+    <div class="top">
+      <a href="#" data-go="home" class="ic" aria-label="목록으로">‹</a>
+      <div class="tt"><b>${m.n}. ${esc(m.t)}</b><small>${esc(m.a)}</small></div>
+      <button class="ic star ${sg.mastered ? "on" : ""}" id="star" aria-label="외움 표시">★</button>
+    </div>
+    <div id="media"></div>
+    <nav class="tabs" id="tabs">${TABS.map(([k, l]) => `<a href="#" data-t="${k}" data-go="song/${id}/${k}">${l}</a>`).join("")}</nav>
+    <main id="tb"></main>
+    <div class="pn">${prev ? `<a href="#" data-go="song/${prev.id}">‹ ${esc(prev.t)}</a>` : "<span></span>"}${next ? `<a href="#" data-go="song/${next.id}">${esc(next.t)} ›</a>` : "<span></span>"}</div>`;
+    $("#star").onclick = e => {
+      if (!(sg.en || "").trim()) return toast("가사를 먼저 넣어 주세요");
+      sg.mastered = !sg.mastered; save(id);
+      e.currentTarget.classList.toggle("on", sg.mastered);
+      toast(sg.mastered ? "외움으로 표시했어요 ★" : "외움 표시를 해제했어요");
+    };
+    renderMedia(id);
+    window.scrollTo(0, 0);
+  }
+  cur.tab = tab;
+  $$("#tabs a").forEach(a => a.classList.toggle("on", a.dataset.t === tab));
+  const old = $("#tb"), tb = old.cloneNode(false); old.replaceWith(tb);
+  if (tab !== "edit" && !(sg.en || "").trim()) {
+    tb.innerHTML = `<div class="empty"><p>아직 가사가 없어요.<br>편집 탭에서 영어 가사와 한국어 해석을 넣어 주세요.</p>
+      <a class="btn pri" href="#" data-go="song/${id}/edit" style="display:inline-block;margin-top:8px">가사 넣으러 가기</a></div>`;
+    return;
+  }
+  ({ lyrics: renderLyrics, blank: renderBlank, recall: renderRecall, edit: renderEdit })[tab](tb, id);
+}
+
+function releaseAudio() { if (audioURL) { URL.revokeObjectURL(audioURL); audioURL = null; } }
+
+function renderMedia(id) {
+  const m = meta(id), sg = song(id), box = $("#media"); if (!box) return;
+  stopPlayers();
+  const q = encodeURIComponent(m.t + " " + m.a.replace(/\(.*?\)/g, ""));
+  const open = S.ui.media !== false;
+  box.innerHTML = `
+  <button class="mhead" id="mt">🎧 듣기 <span>${open ? "접기" : "펼치기"}</span></button>
+  <div class="mbody" ${open ? "" : "hidden"}>
+    ${sg.yt ? `<div class="yt"><div id="ytp"></div></div><p class="hint" id="yterr" hidden></p>` : ""}
+    <audio id="aud" controls preload="metadata" hidden></audio>
+    <div class="ctl" id="ctl" ${sg.yt ? "" : "hidden"}>
+      <button data-sk="-5">−5초</button>
+      <button data-r="0.75">0.75×</button><button data-r="0.9">0.9×</button><button data-r="1" class="on">1×</button>
+      <button data-ab>구간반복</button>
+    </div>
+    <div class="links">
+      ${sg.yt ? `<a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=${esc(sg.yt)}">YouTube 앱에서 열기</a>` : ""}
+      <a target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=${q}">YouTube 검색</a>
+      <a target="_blank" rel="noopener" href="https://www.melon.com/search/total/index.htm?q=${q}">멜론</a>
+      <a target="_blank" rel="noopener" href="https://open.spotify.com/search/${q}">Spotify</a>
+    </div>
+    ${!sg.yt ? `<p class="hint" id="mhint">편집 탭에서 YouTube 링크나 내 음원 파일을 넣으면 여기서 바로 재생되고 배속·구간반복도 쓸 수 있어요.</p>` : ""}
+  </div>`;
+  $("#mt").onclick = () => {
+    const b = $(".mbody", box), willOpen = b.hidden;
+    b.hidden = !willOpen; S.ui.media = willOpen; save();
+    $("#mt span").textContent = willOpen ? "접기" : "펼치기";
+  };
+
+  // 영상과 내 음원 중 마지막으로 재생한 쪽에 배속·구간반복이 걸림
+  const aud = $("#aud"), ctlEl = $("#ctl"), abBtn = $("[data-ab]", box);
+  let active = sg.yt ? "yt" : "aud", rate = 1;
+  const ab = { a: null, b: null };
+  const P = {
+    t() { return active === "yt" ? (ytPlayer && ytPlayer.getCurrentTime ? ytPlayer.getCurrentTime() : 0) : aud.currentTime; },
+    seek(x) { if (active === "yt") { if (ytPlayer && ytPlayer.seekTo) ytPlayer.seekTo(x, true); } else aud.currentTime = x; }
+  };
+  aud.addEventListener("play", () => { active = "aud"; if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo(); });
+  abTimer = setInterval(() => { if (ab.b != null && P.t() >= ab.b) P.seek(ab.a); }, 200);
+  ctlEl.onclick = e => {
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.sk) P.seek(Math.max(0, P.t() + +b.dataset.sk));
+    if (b.dataset.r) {
+      rate = +b.dataset.r; aud.playbackRate = rate;
+      if (ytPlayer && ytPlayer.setPlaybackRate) ytPlayer.setPlaybackRate(rate);
+      $$("[data-r]", box).forEach(x => x.classList.toggle("on", x === b));
+    }
+    if (b.hasAttribute("data-ab")) {
+      if (ab.a == null) { ab.a = P.t(); abBtn.textContent = "B 지점 찍기"; abBtn.classList.add("on"); }
+      else if (ab.b == null) {
+        if (P.t() <= ab.a) return toast("A 지점보다 뒤에서 눌러 주세요");
+        ab.b = P.t(); P.seek(ab.a); abBtn.textContent = "반복 해제";
+      } else { ab.a = ab.b = null; abBtn.textContent = "구간반복"; abBtn.classList.remove("on"); }
+    }
+  };
+
+  if (sg.yt) loadYT().then(() => {
+    if (!cur || cur.id !== id || !$("#ytp")) return;
+    ytPlayer = new YT.Player("ytp", {
+      videoId: sg.yt,
+      playerVars: { playsinline: 1, rel: 0 },
+      events: {
+        onStateChange: e => {
+          if (e.data === 1) { active = "yt"; if (!aud.paused) aud.pause(); if (rate !== 1) ytPlayer.setPlaybackRate(rate); }
+        },
+        onError: () => {
+          const el = $("#yterr"); if (!el) return;
+          el.hidden = false;
+          el.textContent = "이 영상은 다른 사이트에서 재생이 막혀 있어요. 편집 탭에서 같은 곡의 다른 영상(공식 오디오, 가사 영상 등) 링크로 바꿔 보세요.";
+        }
+      }
+    });
+  }).catch(() => {
+    const el = $("#yterr"); if (el) { el.hidden = false; el.textContent = "YouTube 플레이어를 불러오지 못했어요. 인터넷 연결을 확인해 주세요."; }
+  });
+
+  // 표시 여부와 상관없이 기기 저장소를 직접 확인
+  IDB.get(id).then(blob => {
+    if (!blob) { if (S.audio[id]) { delete S.audio[id]; save(); } return; }
+    if (!S.audio[id]) { S.audio[id] = true; save(); }
+    if (!cur || cur.id !== id) return;
+    const hint = $("#mhint", box); if (hint) hint.remove();
+    audioURL = URL.createObjectURL(blob); aud.src = audioURL; aud.hidden = false; ctlEl.hidden = false;
+    if (!sg.yt) active = "aud";
+  }).catch(() => {});
+}
+
+let ytPlayer = null, abTimer = null, ytReady = null;
+function loadYT() {
+  if (window.YT && window.YT.Player) return Promise.resolve();
+  if (ytReady) return ytReady;
+  ytReady = new Promise((res, rej) => {
+    window.onYouTubeIframeAPIReady = () => res();
+    const s = document.createElement("script");
+    s.src = "https://www.youtube.com/iframe_api";
+    s.onerror = () => { ytReady = null; rej(); };
+    document.head.appendChild(s);
+  });
+  return ytReady;
+}
+function stopPlayers() {
+  clearInterval(abTimer); abTimer = null;
+  if (ytPlayer) { try { ytPlayer.destroy(); } catch (e) {} ytPlayer = null; }
+  releaseAudio();
+}
+
+// ---------- 가사 탭 ----------
+function renderLyrics(el, id) {
+  const lines = parse(song(id)), md = S.ui.lm || "both";
+  el.innerHTML = `
+  <div class="chips">${[["both","영어+해석"],["en","영어만"],["quiz","해석 보고 떠올리기"]].map(([k, l]) =>
+    `<button class="chip ${md === k ? "on" : ""}" data-m="${k}">${l}</button>`).join("")}</div>
+  ${md === "quiz" ? `<p class="hint">해석을 보고 영어 가사를 떠올린 뒤, 탭해서 확인하세요. <a href="#" id="all" style="color:var(--gold)">모두 보기/가리기</a></p>` : ""}
+  <div class="lyr ${md}">${lines.map(L =>
+    L.type === "gap" ? `<div class="gap"></div>` :
+    L.type === "head" ? `<div class="head">${esc(L.en)}</div>` :
+    `<div class="ln"><div class="en">${esc(L.en)}</div>${md !== "en" && (L.kr || md === "quiz") ? `<div class="kr">${esc(L.kr || "(해석 없음)")}</div>` : ""}</div>`
+  ).join("")}</div>`;
+  el.addEventListener("click", e => {
+    const c = e.target.closest("[data-m]");
+    if (c) { S.ui.lm = c.dataset.m; save(); renderSong(id, "lyrics"); return; }
+    if (e.target.id === "all") {
+      e.preventDefault();
+      const lns = $$(".ln", el), any = lns.some(l => !l.classList.contains("show"));
+      lns.forEach(l => l.classList.toggle("show", any)); return;
+    }
+    if (md === "quiz") { const ln = e.target.closest(".ln"); if (ln) ln.classList.toggle("show"); }
+  });
+}
+
+// ---------- 빈칸 탭 ----------
+function renderBlank(el, id) {
+  const sg = song(id), lines = parse(sg);
+  const lvl = S.ui.bl || 0.5, showKr = !!S.ui.bkr;
+  let n = 0;
+  const body = lines.map(L => {
+    if (L.type === "gap") return `<div class="gap"></div>`;
+    if (L.type === "head") return `<div class="head">${esc(L.en)}</div>`;
+    const row = L.en.split(/(\s+)/).map(p => {
+      if (!p) return "";
+      if (/^\s+$/.test(p)) return " ";
+      const m = p.match(TOK), core = m[2];
+      if (core && /\p{L}/u.test(core) && Math.random() < lvl) {
+        n++;
+        return esc(m[1]) + `<input class="blank" data-a="${esc(core)}" style="width:${core.length + 1.6}ch" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="next" aria-label="빈칸">` + esc(m[3]);
+      }
+      return esc(p);
+    }).join("");
+    return `<div class="bline">${row}${showKr && L.kr ? `<div class="kr">${esc(L.kr)}</div>` : ""}</div>`;
+  }).join("");
+  const best = sg.blank && sg.blank[lvl];
+  el.innerHTML = `
+  <div class="tool">
+    <div class="chips">
+      ${[[0.25,"쉬움"],[0.5,"보통"],[0.75,"어려움"],[1,"전부"]].map(([k, l]) => `<button class="chip ${lvl === k ? "on" : ""}" data-l="${k}">${l}</button>`).join("")}
+      <button class="chip ${showKr ? "on" : ""}" data-k>해석</button>
+    </div>
+    <div class="row">
+      <span class="score" id="bsc"><b>0</b> / ${n}${best != null ? ` · 최고 ${best}점` : ""}</span>
+      <span class="row" style="flex:none">
+        <button class="btn" data-act="hint">힌트</button><button class="btn" data-act="show">정답</button><button class="btn" data-act="new">다시 섞기</button>
+      </span>
+    </div>
+  </div>
+  <div class="bl">${body}</div>
+  <p class="hint">빈칸에 단어를 쓰면 맞는 순간 초록색이 되고 다음 칸으로 넘어가요. 대소문자·문장부호는 신경 안 써도 돼요.</p>`;
+
+  let last = null;
+  const blanks = $$(".blank", el);
+  const nextOpen = from => {
+    const i = blanks.indexOf(from);
+    return blanks.slice(i + 1).concat(blanks.slice(0, i)).find(b => !b.readOnly);
+  };
+  const update = () => {
+    const done = blanks.filter(b => b.readOnly).length;
+    $("#bsc").innerHTML = `<b>${done}</b> / ${blanks.length}`;
+    if (blanks.length && done === blanks.length && !el.dataset.fin) {
+      el.dataset.fin = 1;
+      const clean = blanks.filter(b => b.classList.contains("ok") && !b.classList.contains("h")).length;
+      const p = Math.round(clean / blanks.length * 100);
+      sg.blank = sg.blank || {}; const prevBest = sg.blank[lvl];
+      sg.blank[lvl] = Math.max(prevBest || 0, p); save(id);
+      $("#bsc").innerHTML = `완료 <b>${p}점</b>${prevBest != null && p > prevBest ? " · 최고 기록!" : ""}`;
+      toast(p === 100 ? "완벽해요! 🎉 난이도를 올려 보세요" : `${p}점 — 틀린 칸만 기억해 두세요`);
+    }
+  };
+  el.addEventListener("mousedown", e => { if (e.target.closest(".tool button")) e.preventDefault(); });
+  el.addEventListener("focusin", e => { if (e.target.classList.contains("blank")) last = e.target; });
+  el.addEventListener("input", e => {
+    const b = e.target; if (!b.classList.contains("blank") || b.readOnly) return;
+    const a = norm(b.dataset.a), v = norm(b.value);
+    if (v === a) {
+      b.classList.remove("bad"); b.classList.add("ok"); b.readOnly = true; b.value = b.dataset.a;
+      const nx = nextOpen(b); if (nx) nx.focus(); update();
+    } else b.classList.toggle("bad", v.length >= a.length);
+  });
+  el.addEventListener("keydown", e => {
+    if (e.key === "Enter" && e.target.classList.contains("blank")) { e.preventDefault(); const nx = nextOpen(e.target); if (nx) nx.focus(); }
+  });
+  el.addEventListener("click", e => {
+    const l = e.target.closest("[data-l]");
+    if (l) { S.ui.bl = +l.dataset.l; save(); return renderSong(id, "blank"); }
+    if (e.target.closest("[data-k]")) { S.ui.bkr = !showKr; save(); return renderSong(id, "blank"); }
+    const act = e.target.closest("[data-act]"); if (!act) return;
+    const a = act.dataset.act;
+    if (a === "new") return renderSong(id, "blank");
+    if (a === "show") {
+      blanks.filter(b => !b.readOnly).forEach(b => { b.value = b.dataset.a; b.readOnly = true; b.classList.remove("bad"); b.classList.add("shown"); });
+      update(); return;
+    }
+    if (a === "hint") {
+      const b = last && !last.readOnly ? last : blanks.find(x => !x.readOnly); if (!b) return;
+      const ans = b.dataset.a; let k = 0;
+      while (k < b.value.length && k < ans.length && norm(b.value[k]) === norm(ans[k])) k++;
+      b.value = ans.slice(0, k + 1); b.classList.add("h"); b.focus();
+      b.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  });
+}
+
+// ---------- 외워쓰기 탭 ----------
+function lcsDiff(typed, target) {
+  const a = typed.split(/\s+/).map(norm).filter(Boolean);
+  const tw = target.split(/\s+/).filter(Boolean), b = tw.map(norm);
+  const n = a.length, m = b.length;
+  const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
+    dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+  const hit = new Array(m).fill(false);
+  for (let i = 0, j = 0; i < n && j < m;) {
+    if (a[i] === b[j]) { hit[j] = true; i++; j++; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) i++; else j++;
+  }
+  const words = b.filter(Boolean).length, hits = hit.filter((h, k) => h && b[k]).length;
+  return {
+    score: words ? hits / words : 1,
+    html: tw.map((w, k) => !b[k] ? esc(w) : `<span class="${hit[k] ? "hit" : "miss"}">${esc(w)}</span>`).join(" ")
+  };
+}
+
+function renderRecall(el, id, focus) {
+  const sg = song(id), lines = parse(sg);
+  const all = lines.map((l, i) => l.type === "line" ? i : -1).filter(i => i >= 0);
+  if (!R || R.id !== id) R = { id, order: all, pos: 0, res: {}, full: true };
+  if (R.pos >= R.order.length) return recallDone(el, id, lines);
+  const li = R.order[R.pos], L = lines[li];
+  let head = "", prev = "";
+  for (let k = li - 1; k >= 0 && !(head && prev); k--) {
+    if (!prev && lines[k].type === "line") prev = lines[k].en;
+    if (!head && lines[k].type === "head") head = lines[k].en;
+  }
+  const H = S.ui.rh || (S.ui.rh = { kr: true, first: false, prev: true });
+  const heads = lines.map((l, i) => l.type === "head" ? i : -1).filter(i => i >= 0);
+  const fl = L.en.split(/\s+/).map(w => {
+    const m = w.match(TOK);
+    return m[2] ? esc(m[1]) + esc(m[2][0]) + `<i>${"_".repeat(Math.min(m[2].length - 1, 6))}</i>` + esc(m[3]) : esc(w);
+  }).join(" ");
+  const anyHint = (H.kr && L.kr) || H.first || (H.prev && prev);
+  el.innerHTML = `
+  <div class="rbar"><div class="rprog"><div style="width:${R.pos / R.order.length * 100}%"></div></div><span>${R.pos + 1} / ${R.order.length}</span></div>
+  <div class="chips">
+    ${[["kr","해석 힌트"],["first","첫 글자"],["prev","앞 소절"]].map(([k, l]) => `<button class="chip ${H[k] ? "on" : ""}" data-h="${k}">${l}</button>`).join("")}
+  </div>
+  ${heads.length && R.full && R.pos === 0 ? `<select id="from" aria-label="시작 위치"><option value="-1">처음부터 시작</option>${heads.map(h => `<option value="${h}">${esc(lines[h].en)}부터 시작</option>`).join("")}</select>` : ""}
+  <div class="card rc">
+    ${head ? `<div class="sec">${esc(head)}</div>` : ""}
+    ${H.prev ? `<div class="prev">${prev ? "… " + esc(prev) : "(첫 소절)"}</div>` : ""}
+    ${H.kr && L.kr ? `<div class="krh">${esc(L.kr)}</div>` : ""}
+    ${H.first ? `<div class="fl">${fl}</div>` : ""}
+    ${!anyHint ? `<div class="hint">힌트 없이 도전! 다음 소절을 써 보세요.</div>` : ""}
+    <textarea id="rin" rows="2" placeholder="이 소절을 영어로 써 보세요" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false" enterkeyhint="done"></textarea>
+    <div id="rres"></div>
+    <div class="btns" id="rbtn"></div>
+  </div>
+  <div class="btns">
+    ${R.pos > 0 ? `<button class="btn ghost" data-a="back">‹ 이전 소절</button>` : ""}
+    <button class="btn ghost" data-a="restart">처음부터</button>
+  </div>`;
+  const rin = $("#rin"), rres = $("#rres"), rbtn = $("#rbtn");
+  let checked = false;
+  const setBtns = () => {
+    rbtn.innerHTML = checked
+      ? `<button class="btn" data-a="retry">다시 쓰기</button><button class="btn pri" data-a="next">다음 →</button>`
+      : `<button class="btn" data-a="skip">건너뛰기</button><button class="btn" data-a="give">모르겠어요</button><button class="btn pri" data-a="check">확인</button>`;
+  };
+  const check = give => {
+    const v = rin.value.trim();
+    if (!give && !v) return rin.focus();
+    const d = give ? { score: 0, html: `<span class="miss">${esc(L.en)}</span>` } : lcsDiff(v, L.en);
+    R.res[li] = d.score; checked = true;
+    const p = Math.round(d.score * 100), cls = p >= 90 ? "g" : p >= 60 ? "m" : "b";
+    rres.innerHTML = `<div class="ans">${d.html}</div>${!give ? `<div class="typed">내가 쓴 것: ${esc(v)}</div>` : ""}
+      <span class="sc ${cls}">${give ? "정답 확인" : p + "점"}</span>`;
+    setBtns(); rin.readOnly = true;
+  };
+  setBtns();
+  if (focus) rin.focus();
+  rin.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); if (!checked) check(false); else { R.pos++; renderRecall(el, id, true); } }
+  });
+  el.onchange = e => {
+    if (e.target.id !== "from") return;
+    const h = +e.target.value;
+    R = { id, order: h < 0 ? all : all.filter(i => i > h), pos: 0, res: {}, full: h < 0 };
+    renderRecall(el, id);
+  };
+  el.onclick = e => {
+    const hc = e.target.closest("[data-h]");
+    if (hc) { H[hc.dataset.h] = !H[hc.dataset.h]; save(); return renderRecall(el, id); }
+    const b = e.target.closest("[data-a]"); if (!b) return;
+    const a = b.dataset.a;
+    if (a === "check") check(false);
+    else if (a === "give") check(true);
+    else if (a === "skip") { R.res[li] = 0; R.pos++; renderRecall(el, id, true); }
+    else if (a === "next") { R.pos++; renderRecall(el, id, true); }
+    else if (a === "retry") { delete R.res[li]; checked = false; rin.readOnly = false; rin.value = ""; rres.innerHTML = ""; setBtns(); rin.focus(); }
+    else if (a === "back") { R.pos--; renderRecall(el, id, true); }
+    else if (a === "restart") { R = null; renderRecall(el, id); }
+  };
+}
+
+function recallDone(el, id, lines) {
+  const sg = song(id);
+  const total = R.order.reduce((s, i) => s + (R.res[i] || 0), 0) / R.order.length;
+  const p = Math.round(total * 100);
+  const wrong = R.order.filter(i => (R.res[i] || 0) < 0.999);
+  let rec = "";
+  if (R.full && !R.saved) { R.saved = true; if (p > (sg.best || 0)) rec = " · 최고 기록!"; sg.best = Math.max(sg.best || 0, p); save(id); }
+  el.innerHTML = `
+  <div class="card" style="text-align:center;margin-top:16px">
+    <div class="hint">${R.full ? "전곡" : "부분"} 외워쓰기 결과${rec}</div>
+    <div class="big">${p}점</div>
+    <div class="hint">${p >= 95 ? "공연장에서 떼창 가능! 🎤" : p >= 80 ? "거의 다 왔어요. 틀린 소절만 다시 해 봐요." : "들으면서 빈칸 연습을 조금 더 해 보세요."}</div>
+    <div class="btns">
+      ${wrong.length ? `<button class="btn pri" data-a="wrong">틀린 ${wrong.length}소절만 다시</button>` : ""}
+      <button class="btn" data-a="again">처음부터 다시</button>
+    </div>
+    ${p >= 90 && !sg.mastered ? `<div class="btns"><button class="btn" data-a="master">★ 외움으로 표시</button></div>` : ""}
+  </div>
+  ${wrong.length ? `<div class="wrong"><h3 style="font-size:15px">다시 볼 소절</h3>${wrong.map(i =>
+    `<div class="ln"><div class="s">${Math.round((R.res[i] || 0) * 100)}점</div><div class="en">${esc(lines[i].en)}</div>${lines[i].kr ? `<div class="kr">${esc(lines[i].kr)}</div>` : ""}</div>`).join("")}</div>` : ""}`;
+  el.onchange = null;
+  el.onclick = e => {
+    const b = e.target.closest("[data-a]"); if (!b) return;
+    if (b.dataset.a === "wrong") { R = { id, order: wrong, pos: 0, res: {}, full: false }; renderRecall(el, id, true); }
+    else if (b.dataset.a === "again") { R = null; renderRecall(el, id); }
+    else if (b.dataset.a === "master") { sg.mastered = true; save(id); $("#star").classList.add("on"); b.remove(); toast("외움으로 표시했어요 ★"); }
+  };
+}
+
+// ---------- 편집 탭 ----------
+function renderEdit(el, id) {
+  const m = meta(id), sg = song(id), hasA = !!S.audio[id];
+  const g = s => `https://www.google.com/search?q=${encodeURIComponent(s)}`;
+  el.innerHTML = `
+  <section class="card">
+    <h3>음악 연결</h3>
+    <label for="yt">YouTube 링크 (공식 MV·오디오 추천)</label>
+    <div class="row"><input type="url" id="yt" placeholder="https://youtu.be/..." value="${sg.yt ? "https://youtu.be/" + esc(sg.yt) : ""}"><button class="btn" id="ytsave">저장</button></div>
+    <p class="hint">저장하면 위 ‘듣기’ 칸에서 영상이 바로 재생돼요. 배속·구간반복도 쓸 수 있어요.</p>
+    <label for="af">내 음원 파일 <small>(올린 기기·앱에만 저장 · 배속/구간반복 가능)</small></label>
+    <p class="hint">음원은 계정에 올라가지 않아요. 휴대폰 앱, 휴대폰 브라우저, PC는 각각 따로 올려야 해요.</p>
+    <div class="row"><button class="btn" id="afbtn">${hasA ? "다른 파일로 바꾸기" : "음원 파일 선택"}</button>${hasA ? `<button class="btn danger" id="adel">삭제</button>` : ""}</div>
+    <p class="hint" id="afst">${hasA ? "확인 중…" : "아직 올린 음원이 없어요."}</p>
+    <input type="file" id="af" accept="audio/*" hidden>
+  </section>
+  <section class="card">
+    <h3>가사 · 해석</h3>
+    <p class="hint">한 줄에 한 소절씩 넣어 주세요. <b>[Chorus]</b>처럼 대괄호로 쓴 줄은 섹션 제목으로 보여요.</p>
+    <div class="links">
+      <a target="_blank" rel="noopener" href="${g(m.t + " " + m.a.replace(/\(.*?\)/g, "") + " lyrics")}">영어 가사 검색</a>
+      <a target="_blank" rel="noopener" href="${g(m.t + " 가사 해석")}">한국어 해석 검색</a>
+    </div>
+    <label for="en">영어 가사 <small id="cen"></small></label>
+    <textarea id="en" rows="12" placeholder="여기에 영어 가사를 붙여넣기" spellcheck="false">${esc(sg.en)}</textarea>
+    <div class="btns"><button class="btn" id="split">영어·한국어가 섞인 글 자동 분리</button></div>
+    <p class="hint">블로그처럼 영어 줄과 한국어 줄이 번갈아 있는 글을 위 칸에 통째로 붙여넣고 누르면 알아서 나눠 줘요.</p>
+    <label for="kr">한국어 해석 <small id="ckr"></small></label>
+    <textarea id="kr" rows="12" placeholder="영어 가사와 같은 줄 번호에 맞춰 넣기">${esc(sg.kr)}</textarea>
+    <p class="hint" id="sv">입력하면 자동 저장돼요.</p>
+  </section>
+  ${m.custom ? `<div class="btns"><button class="btn danger" id="cdel">이 곡을 셋리스트에서 삭제</button></div>` : ""}`;
+
+  const en = $("#en", el), kr = $("#kr", el);
+  const counts = () => {
+    const a = en.value.replace(/\s+$/, "").split("\n").length, b = kr.value.replace(/\s+$/, "").split("\n").length;
+    $("#cen").textContent = en.value.trim() ? `· ${a}줄` : "";
+    $("#ckr").textContent = kr.value.trim() ? `· ${b}줄${a !== b ? " (영어와 줄 수가 달라요)" : ""}` : "";
+  };
+  let timer = null;
+  const doSave = () => {
+    clearTimeout(timer); flush = null;
+    if (sg.en === en.value && sg.kr === kr.value) return;
+    sg.en = en.value; sg.kr = kr.value; R = null; save(id);
+    const sv = $("#sv"); if (sv) sv.textContent = "저장됨 ✓";
+  };
+  const queue = () => { counts(); $("#sv").textContent = "저장 중…"; clearTimeout(timer); timer = setTimeout(doSave, 600); flush = doSave; };
+  en.addEventListener("input", queue); kr.addEventListener("input", queue);
+  counts();
+
+  const runSplit = () => {
+    const src = en.value.replace(/\r/g, "").split("\n");
+    const E = [], K = [];
+    src.forEach(l => {
+      const t = l.trim();
+      if (/[가-힣]/.test(t)) {
+        let j = E.length - 1; while (j >= 0 && !E[j].trim()) j--;
+        if (j < 0) return;
+        K[j] = K[j] ? K[j] + " " + t : t;
+      } else {
+        if (!t && E.length && !E[E.length - 1].trim()) return;
+        E.push(t); K[E.length - 1] = K[E.length - 1] || "";
+      }
+    });
+    en.value = E.join("\n").trim(); kr.value = K.slice(0, E.length).map(x => x || "").join("\n");
+    queue(); doSave(); toast("분리 완료 — 가사 탭에서 확인해 보세요");
+  };
+  const splitBtn = $("#split");
+  splitBtn.onclick = () => {
+    if (!en.value.split("\n").some(l => /[가-힣]/.test(l))) return toast("위 칸에 한국어 줄이 없어요");
+    if (!kr.value.trim()) return runSplit();
+    if (splitBtn.dataset.arm) { delete splitBtn.dataset.arm; splitBtn.textContent = "영어·한국어가 섞인 글 자동 분리"; splitBtn.classList.remove("warn"); return runSplit(); }
+    splitBtn.dataset.arm = 1; splitBtn.textContent = "해석 칸을 덮어써요 · 한 번 더 누르기"; splitBtn.classList.add("warn");
+    setTimeout(() => { if (splitBtn.dataset.arm) { delete splitBtn.dataset.arm; splitBtn.textContent = "영어·한국어가 섞인 글 자동 분리"; splitBtn.classList.remove("warn"); } }, 3500);
+  };
+  $("#ytsave").onclick = () => {
+    const v = $("#yt").value.trim();
+    if (!v) { sg.yt = ""; save(id); renderMedia(id); return toast("영상 연결을 지웠어요"); }
+    const y = ytId(v); if (!y) return toast("YouTube 링크 형식이 아니에요. 공유 버튼으로 복사한 주소를 넣어 주세요.");
+    sg.yt = y; save(id); S.ui.media = true; renderMedia(id); toast("영상 연결 완료");
+  };
+  const afst = $("#afst", el);
+  IDB.get(id).then(b => {
+    if (!b) { afst.textContent = "아직 올린 음원이 없어요."; return; }
+    afst.innerHTML = `<span style="color:var(--ok)">✓ 저장됨</span> · ${esc(b.name || "음원")} (${(b.size / 1048576).toFixed(1)}MB) · 위 ‘듣기’에서 재생`;
+  }).catch(() => { afst.textContent = "이 화면에서는 음원을 저장할 수 없어요."; });
+  $("#afbtn").onclick = () => $("#af").click();
+  $("#af").onchange = async e => {
+    const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+    afst.textContent = "저장 중…";
+    try {
+      try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch (e2) {}
+      await IDB.set(id, f); S.audio[id] = true; save(); S.ui.media = true;
+      renderMedia(id); renderSong(id, "edit"); toast("음원 저장 완료 — 위에서 바로 재생돼요");
+    } catch (err) { afst.textContent = "저장 실패 — 파일이 너무 크거나 이 앱·브라우저가 저장을 막고 있어요."; toast("음원 저장 실패"); }
+  };
+  const adel = $("#adel");
+  if (adel) adel.onclick = async () => {
+    try { await IDB.del(id); } catch (e) {}
+    delete S.audio[id]; save(); renderMedia(id); renderSong(id, "edit");
+  };
+  const cdel = $("#cdel");
+  if (cdel) twoTap(cdel, "가사도 함께 지워져요 · 한 번 더 누르기", async () => {
+    flush = null; clearTimeout(timer);
+    S.custom = S.custom.filter(c => c.id !== id); delete S.songs[id]; delete S.audio[id]; save("_meta", id);
+    try { await IDB.del(id); } catch (e) {}
+    go("home");
+  });
+}
+
+window.addEventListener("pagehide", () => { if (flush) flush(); push(); });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") { if (flush) flush(); push(); } });
+route();
+initDb().catch(() => {});
+})();
+</script>
+
+</body>
+</html>
